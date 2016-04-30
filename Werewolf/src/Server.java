@@ -50,6 +50,7 @@ class Server
 
             switch (method) {
                 case "join":
+                    System.out.println("Masuk join");
                     break;
                 case "leave" :
                     break;
