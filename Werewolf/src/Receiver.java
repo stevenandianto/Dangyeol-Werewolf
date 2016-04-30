@@ -1,9 +1,7 @@
 /**
  * Created by user on 29/04/2016.
  */
-import java.net.DatagramSocket;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
+import java.net.*;
 
 public class Receiver
 {
@@ -13,17 +11,19 @@ public class Receiver
      */
     public static void main(String args[]) throws Exception
     {
-        int listenPort = 9876;
-        DatagramSocket serverSocket = new DatagramSocket(listenPort);
-
+        int serverPort = 9875;
+        DatagramSocket serverSocket = new DatagramSocket(serverPort);
+        //ServerSocket sSocket = new ServerSocket(serverPort);
         byte[] receiveData = new byte[1024];
         while(true)
         {
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
             serverSocket.receive(receivePacket);
+            //Socket clientSocket = sSocket.accept();
 
+            String clientAddress = receivePacket.getAddress().toString();
             String sentence = new String(receivePacket.getData(), 0, receivePacket.getLength());
-            System.out.println("RECEIVED: " + sentence);
+            System.out.println("RECEIVED: " + clientAddress);
         }
     }
 }

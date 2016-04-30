@@ -8,11 +8,15 @@ class UDPClient
 {
     public static void main(String args[]) throws Exception
     {
-    while(true) {
         BufferedReader inFromUser =
                 new BufferedReader(new InputStreamReader(System.in));
-        DatagramSocket clientSocket = new DatagramSocket(9875);
-        InetAddress IPAddress = InetAddress.getByName("localhost");
+        System.out.println("Masukan IP : ");
+        String ip = inFromUser.readLine();
+        System.out.println("Port : ");
+        String port = inFromUser.readLine();
+    while(true) {
+        DatagramSocket clientSocket = new DatagramSocket(Integer.parseInt(port));
+        InetAddress IPAddress = InetAddress.getByName(ip);
         byte[] sendData = new byte[1024];
         byte[] receiveData = new byte[1024];
         String sentence = inFromUser.readLine();
