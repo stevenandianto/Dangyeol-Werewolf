@@ -2,6 +2,7 @@
  * Created by user on 29/04/2016.
  */
 import com.sun.org.apache.xpath.internal.SourceTree;
+import org.json.simple.JSONObject;
 
 import java.io.*;
 import java.net.*;
@@ -9,7 +10,8 @@ import java.net.*;
 class Clients
 {
     public static void main(String args[]) throws Exception
-    {  BufferedReader inFromUser =
+    {
+        BufferedReader inFromUser =
             new BufferedReader(new InputStreamReader(System.in));
         System.out.println("Masukan IP Server: ");
         String ip = inFromUser.readLine();
@@ -21,11 +23,19 @@ class Clients
         Socket TCPclientSocket = new Socket(ip, Integer.parseInt(port));
         DataOutputStream outToServer = new DataOutputStream(TCPclientSocket.getOutputStream());
         BufferedReader inFromServer = new BufferedReader(new InputStreamReader(TCPclientSocket.getInputStream()));
-        System.out.println("Send something to Server");
+        System.out.println("Insert username : ");
         sentence = inFromUser.readLine();
-        outToServer.writeBytes(sentence + '\n');
-        modifiedSentence = inFromServer.readLine();
-        System.out.println("FROM SERVER: " + modifiedSentence);
+        JSONObject objOut = new JSONObject();
+        objOut.put("method", "join");
+        objOut.put("username", sentence);
+        objOut.put("udp_address", TCPclientSocket.getInetAddress().toString());
+        objOut.put("udp_port", TCPclientSocket.getPort());
+        System.out.println(objOut.toJSONString());
+        System.out.println(objOut.toString());
+        outToServer.writeBytes(objOut.toString());
+        System.out.println("abis dikirim");
+        //modifiedSentence = inFromServer.readLine();
+        //System.out.println("FROM SERVER: " + modifiedSentence);
         TCPclientSocket.close();
 
         //UDP Initiation
@@ -48,6 +58,7 @@ class Clients
         UnreliableSender unreliableSender = new UnreliableSender(clientSocket);
         unreliableSender.send(sendPort);
 
+        // UDP LOOP
         while(true) {
 
             sendData = new byte[1024];
