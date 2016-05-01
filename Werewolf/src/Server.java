@@ -16,6 +16,8 @@ class Server
     private static int nPlayers;
     private static int nReady;
     private static int counter = 0;
+    private static int werewolfID1;
+    private static int werewolfID2;
     private static ArrayList<ConnectionHandler> clientList = new ArrayList<>();
 
     private static class ConnectionHandler implements Runnable {
@@ -91,9 +93,12 @@ class Server
                         JSONObject objOut2 = new JSONObject();
                         objOut2.put("method","start_game");
                         objOut2.put("time", "day");
-                        //objOut2.put("role", );
-                        //if (role.equals("werewolf"))
-                        //    objOut2.put("friend", /* friends */);
+                        if (clientNo == werewolfID1 || clientNo == werewolfID2) {
+                            objOut2.put("role", "werewolf");
+                            //objOut2.put("friend", );
+                        }
+                        else
+                            objOut2.put("role", "civilian");
                         objOut2.put("description","");
                         System.out.println(objOut2.toJSONString());
                         System.out.println(objOut2.toString());
@@ -169,6 +174,10 @@ class Server
     public static void main(String argv[]) throws Exception
     {
         try {
+            werewolfID1 = (int) (Math.random() * 6);
+            werewolfID2 = (int) (Math.random() * 6);
+            while (werewolfID2 == werewolfID1)
+                werewolfID2 = (int) (Math.random() * 6);
             ServerSocket servSock = new ServerSocket(9875);
             for (;;) {
                 Socket clientSock = servSock.accept();
