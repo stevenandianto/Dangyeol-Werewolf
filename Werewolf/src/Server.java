@@ -18,6 +18,7 @@ class Server
     private static int counter = 0;
     private static int werewolfID1;
     private static int werewolfID2;
+    private static int daycount = 1;
 
     private static ArrayList<ConnectionHandler> clientList = new ArrayList<>();
     private static class ConnectionHandler implements Runnable {
@@ -26,7 +27,7 @@ class Server
         private String username;
         private String udp_address;
         private int udp_port;
-        private int daycount = 1;
+
         PrintWriter outToClient;
         private int is_alive = 1;
 

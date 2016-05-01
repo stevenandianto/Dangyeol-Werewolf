@@ -199,6 +199,7 @@ class ClientsThread extends Thread {
                         description = (String) obj.get("description");
                         System.out.println(description);
                         if (role.equals("werewolf")) {
+                            friend = new ArrayList<>();
                             array = (JSONArray) obj.get("friend");
                             for (int i = 0; i < array.size(); i++)
                                 friend.add((String) array.get(i));
@@ -217,7 +218,7 @@ class ClientsThread extends Thread {
             }
 
             // creating threads for UDP
-            SendMessage sendMessage = new SendMessage(InetAddress.getLocalHost().getHostAddress(), 9999);
+            SendMessage sendMessage = new SendMessage(TCPclientSocket.getLocalAddress().toString(), TCPclientSocket.getLocalPort());
 
             // getting all players info
             response = new StringBuffer();
