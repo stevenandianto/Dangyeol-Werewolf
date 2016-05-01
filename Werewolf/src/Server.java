@@ -15,19 +15,21 @@ class Server
     private static boolean gameover = false;
     private static volatile int nPlayers;
     private static volatile int nReady;
-    private static volatile int daycount = 1;
     private static int counter = 0;
     private static int werewolfID1;
     private static int werewolfID2;
-    private static ArrayList<ConnectionHandler> clientList = new ArrayList<>();
+    private static int daycount = 1;
 
+    private static ArrayList<ConnectionHandler> clientList = new ArrayList<>();
     private static class ConnectionHandler implements Runnable {
         private int clientNo;
         private Socket socket = null;
         private String username;
         private String udp_address;
         private int udp_port;
+
         PrintWriter outToClient;
+        private int is_alive = 1;
 
         public ConnectionHandler(Socket sock) {
             socket = sock;
@@ -95,6 +97,7 @@ class Server
                     if (nPlayers == 6 && nReady == nPlayers)
                     {
                         JSONObject objOut2 = new JSONObject();
+
                         objOut2.put("method","start_game");
                         objOut2.put("time", "day");
                         if (clientNo == werewolfID1 || clientNo == werewolfID2) {
@@ -111,7 +114,31 @@ class Server
                         outToClient.println(objOut2.toString());
                     }
                     break;
+                case "client_address" :
+                 //   System.out.println("asdfaaaaaa " + clientList.get(0).clientNo);
+                    objOut = new JSONObject();
+                    JSONObject objOut2;
+                    objOut.put("status","ok");
+                    JSONArray clientlist = new JSONArray();
+                    for(int i=0; i<clientList.size(); i++) {
+        //                System.out.println(i + " clientno " + clientList.get(i).clientNo + " aaaa " + clientNo);
+                        objOut2 = new JSONObject();
+                        objOut2.put("player_id",clientList.get(i).clientNo);
+                        objOut2.put("is_alive",clientList.get(i).is_alive);
+                        objOut2.put("address",clientList.get(i).udp_address);
+                        objOut2.put("port",clientList.get(i).udp_port);
+                        objOut2.put("username",clientList.get(i).username);
+                        clientlist.add(objOut2);
 
+                        //clientlist.add(clientList.get(i).clientNo);
+                        //clientlist.add(clientList.get(i).is_alive);
+                        //clientlist.add(clientList.get(i).udp_address);
+                        //clientlist.add(clientList.get(i).udp_port);
+                        //clientlist.add(clientList.get(i).username);
+                    }
+                    objOut.put("clients", clientlist);
+                    System.out.println(objOut.toString());
+                    break;
                 case "vote_result_werewolf" :
                     System.out.println("Hasil Vote Werewolf");
                     //Algoritma Hasil Vote Werewolf
