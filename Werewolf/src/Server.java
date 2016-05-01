@@ -18,7 +18,7 @@ class Server
     private static int counter = 0;
     private static int werewolfID1;
     private static int werewolfID2;
-    private static int daycount = 1;
+    private static volatile int daycount = 1;
 
     private static ArrayList<ConnectionHandler> clientList = new ArrayList<>();
     private static class ConnectionHandler implements Runnable {
