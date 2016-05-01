@@ -95,12 +95,14 @@ class Server
                         objOut2.put("time", "day");
                         if (clientNo == werewolfID1 || clientNo == werewolfID2) {
                             objOut2.put("role", "werewolf");
-                            //objOut2.put("friend", );
+                            JSONArray friend = new JSONArray();
+                            friend.add(clientList.get(werewolfID1).username);
+                            friend.add(clientList.get(werewolfID2).username);
+                            objOut2.put("friend", friend);
                         }
                         else
                             objOut2.put("role", "civilian");
                         objOut2.put("description","");
-                        System.out.println(objOut2.toJSONString());
                         System.out.println(objOut2.toString());
                         outToClient.println(objOut2.toString());
                     }
@@ -135,7 +137,9 @@ class Server
                     JSONObject obj = (JSONObject) tempObj;
 
                     System.out.println("Received: " + obj.toString());
-                    parseCommand(obj);
+
+                    if (obj.toString().contains("method"))
+                        parseCommand(obj);
                 }
             } catch (IOException | ParseException ex) {
                 ex.printStackTrace();
@@ -174,6 +178,8 @@ class Server
     public static void main(String argv[]) throws Exception
     {
         try {
+            nPlayers = 0;
+            nReady = 0;
             werewolfID1 = (int) (Math.random() * 6);
             werewolfID2 = (int) (Math.random() * 6);
             while (werewolfID2 == werewolfID1)

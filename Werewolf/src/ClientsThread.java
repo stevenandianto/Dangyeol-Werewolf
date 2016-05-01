@@ -189,6 +189,8 @@ class ClientsThread extends Thread {
                 attributes.add("time");
                 attributes.add("role");
                 attributes.add("description");
+                System.out.println(response.toString());
+                System.out.println("status code = " + statusCode(obj.toString(), attributes));
                 if (statusCode(obj.toString(), attributes) == 0) {
                     method = (String) obj.get("method");
                     if (method.equals("start")) {
