@@ -13,6 +13,8 @@ import java.util.ArrayList;
 class Server
 {
     private static boolean gameover = false;
+    private static boolean sameUserName;
+    private static boolean currentlyInGame = false;
     private static volatile int nPlayers;
     private static volatile int nReady;
     private static int counter = 0;
@@ -48,35 +50,41 @@ class Server
                     udp_address = (String) obj.get("udp_address");
                     Long udp = (Long) obj.get("udp_port");
                     udp_port = udp.intValue();
-                    //if (/*status_ok */) {
-                    nPlayers++;
-                    objOut.put("status","ok");
-                    objOut.put("player_id", clientNo);
-                    /**}
-                     else if () {
-                     objOut.put("status","fail");
-                     objOut.put("description", "fail description");
-                     } else {
-                     objOut.put("status","error");
-                     objOut.put("description","wrong request");
-                     }
-                     System.out.println(objOut.toJSONString());
-                     System.out.println(objOut.toString());**/
+                    sameUserName = false;
+                    for (int i=0; i<nPlayers; i++) {
+                    	if (username.equals(clientList.get(i).username)) {
+                    		sameUserName = true;
+                    	}
+                    }
+                    if (!sameUserName) {
+	            	    nPlayers++;
+	                    objOut.put("status","ok");
+	                    objOut.put("player_id", clientNo);
+                    }
+                    else if (sameUserName) {
+	                    objOut.put("status","fail");
+	                    objOut.put("description", "username is already taken, no longer single");
+                    } else {
+	                    objOut.put("status","error");
+	                    objOut.put("description","wrong request");
+                    }
+                    System.out.println(objOut.toJSONString());
+                    System.out.println(objOut.toString());**/
                     outToClient.println(objOut.toString());
                     break;
                 case "leave" :
-                    //if (/* status_ok */) {
+                    if (!currentlyInGame) {
                     objOut.put("status","ok");
                     nPlayers--;
-					/*} else if (){
-						objOut.put("status","fail");
-						objOut.put("description","currently in game");
-					} else {
-						objOut.put("status","error");
-						objOut.put("description","wrong request");
-					}
-					System.out.println(objOut.toJSONString());
-					System.out.println(objOut.toString());*/
+		    } else if (currentlyInGame){
+			objOut.put("status","fail");
+			objOut.put("description","currently in game");
+		    } else {
+			objOut.put("status","error");
+			objOut.put("description","wrong request");
+		    }
+  		    System.out.println(objOut.toJSONString());
+		    System.out.println(objOut.toString());
                     outToClient.println(objOut.toString());
                     break;
                 case "ready" :
@@ -112,6 +120,7 @@ class Server
                         objOut2.put("description", "");
                         System.out.println(objOut2.toString());
                         outToClient.println(objOut2.toString());
+                        currentlyInGame = true;
                     }
                     break;
                 case "client_address" :
