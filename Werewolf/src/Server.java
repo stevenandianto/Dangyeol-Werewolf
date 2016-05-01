@@ -88,16 +88,9 @@ class Server
                     outToClient.println(objOut.toString());
                     break;
                 case "ready" :
-                    //if (/* status_ok */) {
                     nReady++;
                     objOut.put("status","ok");
                     objOut.put("description","waiting for other player to start");
-					/*} else {
-						objOut.put("status","error");
-						objOut.put("description","wrong request");
-					}
-					System.out.println(objOut.toJSONString());
-					System.out.println(objOut.toString());*/
                     outToClient.println(objOut.toString());
                     while (nPlayers < 6 || nReady < 6) {
                         System.out.println(nPlayers + " " + nReady);
