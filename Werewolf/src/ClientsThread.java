@@ -1,17 +1,20 @@
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 
 /**
  * Created by user on 30/04/2016.
  */
 class ClientsThread extends Thread {
     private  BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-
+    private int playerID;
+    private String time;
+    private String role;
+    private ArrayList<String> friend;
     private String sentence;
 
     public ClientsThread(){
@@ -25,7 +28,10 @@ class ClientsThread extends Thread {
             String ip = inFromUser.readLine();
             System.out.println("Masukan Port Server: ");
             String port = inFromUser.readLine();
-            System.out.println("Masukan Address : ");
+
+            TCPConnection(ip,Integer.parseInt(port));
+
+            /*System.out.println("Masukan Address : ");
             String SenderAddress = inFromUser.readLine();
             System.out.println("Masukan Port : ");
             String SenderPort = inFromUser.readLine();
@@ -54,34 +60,194 @@ class ClientsThread extends Thread {
                         break;
                 }
                 break;
-            }
+            }*/
 
         } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
 
+    public int statusCode(String test, ArrayList<String> attributes) {
+        if (!isJSONValid(test))
+            return 1;
+        else {
+            int i;
+            for (i=0;i<attributes.size();i++) {
+                if (!test.contains(attributes.get(i)))
+                    return 1;
+            }
+        }
+        return 0;
+    }
+
+    public boolean isJSONValid(String test) {
+        try {
+            new org.json.JSONObject(test);
+        } catch (Exception e) {
+            try {
+                new org.json.JSONArray(test);
+            } catch (Exception e1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void TCPConnection(String ServerIP, int ServerPort){
         try {
-
+            String method, description, responseLine, statusResponse;
+            ArrayList<String> attributes = new ArrayList<>();
+            boolean progress;
+            StringBuffer response = new StringBuffer();
+            JSONParser parser = new JSONParser();
+            Object tempObj;
+            JSONObject obj, objOut;
+            JSONArray array;
 
             String ip = ServerIP;
             Socket TCPclientSocket = new Socket(ip, ServerPort);
-            DataOutputStream outToServer = new DataOutputStream(TCPclientSocket.getOutputStream());
+            PrintWriter outToServer = new PrintWriter(TCPclientSocket.getOutputStream(), true);
             BufferedReader inFromServer = new BufferedReader(new InputStreamReader(TCPclientSocket.getInputStream()));
-            System.out.println("Insert username : ");
-            sentence = inFromUser.readLine();
-            JSONObject objOut = new JSONObject();
-            objOut.put("method", "join");
-            objOut.put("username", sentence);
-            objOut.put("udp_address", TCPclientSocket.getInetAddress().toString());
-            objOut.put("udp_port", TCPclientSocket.getPort());
-            System.out.println(objOut.toJSONString());
-            System.out.println(objOut.toString());
-            outToServer.writeBytes(objOut.toString());
-            System.out.println("abis dikirim");
-            //modifiedSentence = inFromServer.readLine();
-            //System.out.println("FROM SERVER: " + modifiedSentence);
+
+
+            // joining
+            progress = false;
+            while (!progress) {
+                System.out.println("Insert username : ");
+                sentence = inFromUser.readLine();
+                objOut = new JSONObject();
+                objOut.put("method", "join");
+                objOut.put("username", sentence);
+                objOut.put("udp_address", TCPclientSocket.getLocalAddress().toString());
+                objOut.put("udp_port", TCPclientSocket.getLocalPort());
+                System.out.println(objOut.toString());
+                System.out.println(TCPclientSocket.getOutputStream().toString());
+                outToServer.println(objOut.toString());
+                System.out.println("abis dikirim");
+                responseLine = inFromServer.readLine();
+                response.append(responseLine);
+                tempObj = parser.parse(response.toString());
+                obj = (JSONObject) tempObj;
+                statusResponse = (String) obj.get("status");
+                switch (statusResponse) {
+                    case "ok":
+                        playerID = ((Long) obj.get("player_id")).intValue();
+                        progress = true;
+                        break;
+                    case "fail":
+                    case "error":
+                        description = (String) obj.get("description");
+                        System.out.println(description);
+                        break;
+                }
+            }
+
+            // readying up
+            response = new StringBuffer();
+            progress = false;
+            while (!progress) {
+                System.out.println("Type 'ready' without single quotation mark to ready up OR 'leave' to leave the game : ");
+                sentence = inFromUser.readLine();
+                while (!sentence.equals("ready")) {
+                    if (sentence.equals("leave")) {
+                        TCPclientSocket.close();
+                        System.exit(0);
+                    }
+                    System.out.println("Type 'ready' without single quotation mark to ready up OR 'leave' to leave the game : ");
+                    sentence = inFromUser.readLine();
+                }
+                objOut = new JSONObject();
+                objOut.put("method", "ready");
+                outToServer.println(objOut.toString());
+
+                responseLine = inFromServer.readLine();
+                response.append(responseLine);
+                System.out.println(response.toString());
+                tempObj = parser.parse(response.toString());
+                obj = (JSONObject) tempObj;
+                statusResponse = (String) obj.get("status");
+                switch (statusResponse) {
+                    case "ok":
+                        progress = true;
+                    case "error":
+                        description = (String) obj.get("description");
+                        System.out.println(description);
+                        break;
+                }
+            }
+
+            // starting game
+            response = new StringBuffer();
+            progress = false;
+            while (!progress) {
+                responseLine = inFromServer.readLine();
+                response.append(responseLine);
+                tempObj = parser.parse(response.toString());
+                obj = (JSONObject) tempObj;
+                objOut = new JSONObject();
+                attributes.add("method");
+                attributes.add("time");
+                attributes.add("role");
+                attributes.add("description");
+                if (statusCode(obj.toString(), attributes) == 0) {
+                    method = (String) obj.get("method");
+                    if (method.equals("start")) {
+                        time = (String) obj.get("time");
+                        role = (String) obj.get("role");
+                        description = (String) obj.get("description");
+                        System.out.println(description);
+                        if (role.equals("werewolf")) {
+                            array = (JSONArray) obj.get("friend");
+                            for (int i = 0; i < array.size(); i++)
+                                friend.add((String) array.get(i));
+                        }
+                        objOut.put("status", "ok");
+                        outToServer.println(objOut.toString());
+                        progress = true;
+                    } else {
+                        objOut.put("status", "fail");
+                        outToServer.println(objOut.toString());
+                    }
+                } else {
+                    objOut.put("status", "fail");
+                    outToServer.println(objOut.toString());
+                }
+            }
+
+            // creating threads for UDP
+            SendMessage sendMessage = new SendMessage(InetAddress.getLocalHost().getHostAddress(), 9999);
+
+            // getting all players info
+            response = new StringBuffer();
+            progress = false;
+            while (!progress) {
+                objOut = new JSONObject();
+                objOut.put("method", "client_address");
+                outToServer.println(objOut.toString());
+
+                responseLine = inFromServer.readLine();
+                response.append(responseLine);
+                tempObj = parser.parse(response.toString());
+                obj = (JSONObject) tempObj;
+                statusResponse = (String) obj.get("status");
+                switch (statusResponse) {
+                    case "ok":
+                        description = (String) obj.get("description");
+                        System.out.println(description);
+                        array = (JSONArray) obj.get("clients");
+                        System.out.println(array.toString());
+                        progress = true;
+                        break;
+                    case "fail":
+                    case "error":
+                        description = (String) obj.get("description");
+                        System.out.println(description);
+                        break;
+                }
+            }
+
+
+            // closing TCP socket after game is over
             TCPclientSocket.close();
         } catch (Exception e){
             e.printStackTrace();
@@ -89,7 +255,7 @@ class ClientsThread extends Thread {
     }
 }
 
-class ReceiveMessage extends  Thread{
+class ReceiveMessage extends Thread{
     private String receiverAddress;
     private int receiverPort;
     private int senderPort;
@@ -104,9 +270,7 @@ class ReceiveMessage extends  Thread{
         this.senderPort = SenderPort;
         try {
             this.clientSocket = new DatagramSocket(receiverPort,InetAddress.getByName(receiverAddress));
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (UnknownHostException e) {
+        } catch (SocketException | UnknownHostException e) {
             e.printStackTrace();
         }
 
@@ -122,30 +286,24 @@ class ReceiveMessage extends  Thread{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            System.out.println("FROM SERVER:" + sentence);
-            new Thread(new SendMessage(senderAddress,senderPort,receiverAddress,receiverPort)).start();
+            //System.out.println("FROM SERVER:" + sentence);
+            //new Thread(new SendMessage(senderAddress,senderPort,receiverAddress,receiverPort)).start();
         }
     }
 
 }
 class SendMessage extends Thread {
-    private String receiverAddress;
-    private int receiverPort;
     private int senderPort;
     private String senderAddress;
     private String sentence;
     private DatagramSocket clientSocket;
     private  BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-    public SendMessage(String SenderAddress, int SenderPort, String RecvAddress, int RecvPort){
-        this.receiverAddress = RecvAddress;
-        this.receiverPort = RecvPort;
+    public SendMessage(String SenderAddress, int SenderPort){
         this.senderAddress = SenderAddress;
         this.senderPort = SenderPort;
         try {
             this.clientSocket = new DatagramSocket(senderPort,InetAddress.getByName(senderAddress));
-        } catch (SocketException e) {
-            e.printStackTrace();
-        } catch (UnknownHostException e) {
+        } catch (SocketException | UnknownHostException e) {
             e.printStackTrace();
         }
 
@@ -154,12 +312,12 @@ class SendMessage extends Thread {
     public void run() {
     }
 
-    public void send(){
+    public void send(String receiverAddress, int receiverPort){
         byte[]  sendData = new byte[1024];
         try {
             sentence = inFromUser.readLine();
             sendData = sentence.getBytes();
-            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(this.receiverAddress), receiverPort);
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(receiverAddress), receiverPort);
             clientSocket.send(sendPacket);
             new Thread(new ReceiveMessage(senderAddress,senderPort,receiverAddress,receiverPort)).start();
         } catch (Exception e){
