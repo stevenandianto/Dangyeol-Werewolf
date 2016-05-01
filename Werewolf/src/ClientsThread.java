@@ -1,6 +1,8 @@
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import references.*;
+import references.UnreliableSender;
 
 import java.io.*;
 import java.net.*;
@@ -14,7 +16,9 @@ class ClientsThread extends Thread {
     private int playerID;
     private String time;
     private String role;
+    private int kpu_id = 0;
     private ArrayList<String> friend;
+    private JSONArray clients;
     private String sentence;
 
     public ClientsThread(){
@@ -217,8 +221,9 @@ class ClientsThread extends Thread {
                 }
             }
 
-            // creating threads for UDP
-            SendMessage sendMessage = new SendMessage(TCPclientSocket.getLocalAddress().toString(), TCPclientSocket.getLocalPort());
+
+            //SendMessage sendMessage = new SendMessage(TCPclientSocket.getLocalAddress().toString(), TCPclientSocket.getLocalPort());
+
 
             // getting all players info
             response = new StringBuffer();
@@ -237,8 +242,8 @@ class ClientsThread extends Thread {
                     case "ok":
                         description = (String) obj.get("description");
                         System.out.println(description);
-                        array = (JSONArray) obj.get("clients");
-                        System.out.println(array.toString());
+                        clients = (JSONArray) obj.get("clients");
+                        System.out.println(clients.toString());
                         progress = true;
                         break;
                     case "fail":
@@ -248,6 +253,23 @@ class ClientsThread extends Thread {
                         break;
                 }
             }
+
+            if (playerID == kpu_id) {
+
+            }
+            else {
+                DatagramSocket datagramSocket = new DatagramSocket();
+                UnreliableSender unreliableSender = new UnreliableSender(datagramSocket);
+
+                byte[] sendData = sentence.getBytes();
+                String targetAddress = (String) ((JSONObject)clients.get(kpu_id)).get("address");
+                int targetPort = ((Long) ((JSONObject)clients.get(kpu_id)).get("port")).intValue();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(targetAddress), targetPort);
+                unreliableSender.send(sendPacket);
+                datagramSocket.close();
+            }
+
+
 
 
             // closing TCP socket after game is over
