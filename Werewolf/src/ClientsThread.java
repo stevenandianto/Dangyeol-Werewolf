@@ -123,7 +123,7 @@ class ClientsThread extends Thread {
                 objOut.put("method", "join");
                 objOut.put("username", sentence);
                 objOut.put("udp_address", TCPclientSocket.getLocalAddress().toString());
-                objOut.put("udp_port", TCPclientSocket.getLocalPort());
+                objOut.put("udp_port", 9999);
                 System.out.println(objOut.toString());
                 System.out.println(TCPclientSocket.getOutputStream().toString());
                 outToServer.println(objOut.toString());
@@ -254,23 +254,50 @@ class ClientsThread extends Thread {
                 }
             }
 
-            if (playerID == kpu_id) {
 
-            }
-            else {
+
+            // paxos consensus
+            if (playerID == clients.size()-1 || playerID == clients.size()-2) {
                 DatagramSocket datagramSocket = new DatagramSocket();
                 UnreliableSender unreliableSender = new UnreliableSender(datagramSocket);
+                int proposedID = Integer.valueOf(inFromUser.readLine());
+                int proposalNo = 1;
+                while (proposalNo <= 4) {
+                    objOut = new JSONObject();
+                    objOut.put("method", "prepare_proposal");
+                    JSONArray proposalID = new JSONArray();
+                    proposalID.add(proposalNo);
+                    proposalID.add(proposedID);
+                    objOut.put("proposal_id", proposalID);
 
-                byte[] sendData = sentence.getBytes();
-                String targetAddress = (String) ((JSONObject)clients.get(kpu_id)).get("address");
-                int targetPort = ((Long) ((JSONObject)clients.get(kpu_id)).get("port")).intValue();
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(targetAddress), targetPort);
-                unreliableSender.send(sendPacket);
+                    byte[] sendData = objOut.toString().getBytes();
+                    String targetAddress = (String) ((JSONObject) clients.get(proposalNo-1)).get("address");
+                    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(targetAddress), 9999);
+                    unreliableSender.send(sendPacket);
+                    proposalNo++;
+                }
                 datagramSocket.close();
             }
+            else {
+                DatagramSocket serverSocket = new DatagramSocket(9999);
+                //ServerSocket sSocket = new ServerSocket(serverPort);
+                byte[] receiveData = new byte[1024];
+                while(true)
+                {
+                    DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                    serverSocket.receive(receivePacket);
+                    //Socket clientSocket = sSocket.accept();
 
+                    String clientAddress = receivePacket.getAddress().toString();
 
+                    String sentence = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                    System.out.println("RECEIVED: " + sentence);
+                    tempObj = parser.parse(sentence);
+                    obj = (JSONObject) tempObj;
+                    objOut = new JSONObject();
 
+                }
+            }
 
             // closing TCP socket after game is over
             TCPclientSocket.close();

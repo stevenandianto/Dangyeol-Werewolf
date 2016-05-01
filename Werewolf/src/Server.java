@@ -69,22 +69,22 @@ class Server
 	                    objOut.put("description","wrong request");
                     }
                     System.out.println(objOut.toJSONString());
-                    System.out.println(objOut.toString());**/
+                    System.out.println(objOut.toString());
                     outToClient.println(objOut.toString());
                     break;
                 case "leave" :
                     if (!currentlyInGame) {
-                    objOut.put("status","ok");
-                    nPlayers--;
-		    } else if (currentlyInGame){
-			objOut.put("status","fail");
-			objOut.put("description","currently in game");
-		    } else {
-			objOut.put("status","error");
-			objOut.put("description","wrong request");
-		    }
-  		    System.out.println(objOut.toJSONString());
-		    System.out.println(objOut.toString());
+                        objOut.put("status","ok");
+                        nPlayers--;
+                    } else if (currentlyInGame){
+                        objOut.put("status","fail");
+                        objOut.put("description","currently in game");
+                    } else {
+                        objOut.put("status","error");
+                        objOut.put("description","wrong request");
+                    }
+                    System.out.println(objOut.toJSONString());
+                    System.out.println(objOut.toString());
                     outToClient.println(objOut.toString());
                     break;
                 case "ready" :
@@ -117,13 +117,11 @@ class Server
                     }
                     break;
                 case "client_address" :
-                 //   System.out.println("asdfaaaaaa " + clientList.get(0).clientNo);
                     objOut = new JSONObject();
                     JSONObject objOut2;
                     objOut.put("status","ok");
                     JSONArray clientlist = new JSONArray();
                     for(int i=0; i<clientList.size(); i++) {
-        //                System.out.println(i + " clientno " + clientList.get(i).clientNo + " aaaa " + clientNo);
                         objOut2 = new JSONObject();
                         objOut2.put("player_id",clientList.get(i).clientNo);
                         objOut2.put("is_alive",clientList.get(i).is_alive);
@@ -131,12 +129,6 @@ class Server
                         objOut2.put("port",clientList.get(i).udp_port);
                         objOut2.put("username",clientList.get(i).username);
                         clientlist.add(objOut2);
-
-                        //clientlist.add(clientList.get(i).clientNo);
-                        //clientlist.add(clientList.get(i).is_alive);
-                        //clientlist.add(clientList.get(i).udp_address);
-                        //clientlist.add(clientList.get(i).udp_port);
-                        //clientlist.add(clientList.get(i).username);
                     }
                     objOut.put("clients", clientlist);
                     System.out.println(objOut.toString());
