@@ -26,6 +26,7 @@ class Server
         private String username;
         private String udp_address;
         private int udp_port;
+        private int daycount = 1;
         PrintWriter outToClient;
 
         public ConnectionHandler(Socket sock) {
@@ -105,12 +106,33 @@ class Server
                         }
                         else
                             objOut2.put("role", "civilian");
-                        objOut2.put("description","");
+                        objOut2.put("description", "");
                         System.out.println(objOut2.toString());
                         outToClient.println(objOut2.toString());
                     }
                     break;
 
+                case "vote_result_werewolf" :
+                    System.out.println("Hasil Vote Werewolf");
+                    //Algoritma Hasil Vote Werewolf
+                    daycount++;
+                    objOut = new JSONObject();
+                    objOut.put("method","change_phase");
+                    objOut.put("time","day");
+                    objOut.put("days",daycount);
+                    objOut.put("description","Ganti hari jadi siang");
+                    System.out.println(objOut.toString());
+                    break;
+                case "vote_result_civilian" :
+                    System.out.println("Hasil Vote Civilian");
+                    //Algoritma Hasil Vote Civilian
+                    objOut = new JSONObject();
+                    objOut.put("method","change_phase");
+                    objOut.put("time","night");
+                    objOut.put("days", daycount);
+                    objOut.put("description","Ganti hari jadi malam");
+                    System.out.println(objOut.toString());
+                    break;
                 default :
                     System.out.println("Wrong syntax");
             }

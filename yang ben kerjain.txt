@@ -75,7 +75,7 @@
                     }
                     JSONObject objOut3 = new JSONObject();
                     objOut3.put("method","change_phase");
-                    objOut3.put("time", "night");
+                    objOut3.put("time", "day");
                     //objOut3.put("day", /* day */);
                     objOut3.put("description","");
                     System.out.println(objOut3.toJSONString());
@@ -113,7 +113,7 @@
                     }
                     JSONObject objOut3 = new JSONObject();
                     objOut3.put("method","change_phase");
-                    objOut3.put("time", "day");
+                    objOut3.put("time", "night");
                     objOut3.put("day", /* day */);
                     objOut3.put("description","");
                     System.out.println(objOut3.toJSONString());
