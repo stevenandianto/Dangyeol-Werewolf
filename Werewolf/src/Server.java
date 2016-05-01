@@ -15,6 +15,7 @@ class Server
     private static boolean gameover = false;
     private static volatile int nPlayers;
     private static volatile int nReady;
+    private static volatile int daycount = 1;
     private static int counter = 0;
     private static int werewolfID1;
     private static int werewolfID2;
@@ -26,7 +27,6 @@ class Server
         private String username;
         private String udp_address;
         private int udp_port;
-        private int daycount = 1;
         PrintWriter outToClient;
 
         public ConnectionHandler(Socket sock) {
