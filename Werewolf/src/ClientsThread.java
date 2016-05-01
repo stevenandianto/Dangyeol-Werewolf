@@ -226,6 +226,7 @@ class ClientsThread extends Thread {
 
 
             // getting all players info
+            System.out.println("Masuk get player info");
             response = new StringBuffer();
             progress = false;
             while (!progress) {

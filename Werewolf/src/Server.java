@@ -131,7 +131,9 @@ class Server
                         clientlist.add(objOut2);
                     }
                     objOut.put("clients", clientlist);
+                    objOut.put("description","list of client retrieved");
                     System.out.println(objOut.toString());
+                    outToClient.println(objOut.toString());
                     break;
                 case "vote_result_werewolf" :
                     System.out.println("Hasil Vote Werewolf");
@@ -143,6 +145,7 @@ class Server
                     objOut.put("days",daycount);
                     objOut.put("description","Ganti hari jadi siang");
                     System.out.println(objOut.toString());
+                    outToClient.println(objOut.toString());
                     break;
                 case "vote_result_civilian" :
                     System.out.println("Hasil Vote Civilian");
@@ -153,6 +156,7 @@ class Server
                     objOut.put("days", daycount);
                     objOut.put("description","Ganti hari jadi malam");
                     System.out.println(objOut.toString());
+                    outToClient.println(objOut.toString());
                     break;
                 default :
                     System.out.println("Wrong syntax");
