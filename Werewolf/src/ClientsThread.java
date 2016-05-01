@@ -217,7 +217,7 @@ class ClientsThread extends Thread {
             }
 
             // creating threads for UDP
-            SendMessage sendMessage = new SendMessage(InetAddress.getLocalHost().getHostAddress(), 9999);
+            SendMessage sendMessage = new SendMessage(TCPclientSocket.getLocalAddress().toString(), TCPclientSocket.getLocalPort());
 
             // getting all players info
             response = new StringBuffer();
