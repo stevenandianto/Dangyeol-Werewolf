@@ -193,7 +193,7 @@ class ClientsThread extends Thread {
                 System.out.println("status code = " + statusCode(obj.toString(), attributes));
                 if (statusCode(obj.toString(), attributes) == 0) {
                     method = (String) obj.get("method");
-                    if (method.equals("start")) {
+                    if (method.equals("start_game")) {
                         time = (String) obj.get("time");
                         role = (String) obj.get("role");
                         description = (String) obj.get("description");
@@ -211,7 +211,7 @@ class ClientsThread extends Thread {
                         outToServer.println(objOut.toString());
                     }
                 } else {
-                    objOut.put("status", "fail");
+                    objOut.put("status", "error");
                     outToServer.println(objOut.toString());
                 }
             }

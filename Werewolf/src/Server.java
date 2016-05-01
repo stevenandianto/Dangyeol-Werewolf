@@ -13,8 +13,8 @@ import java.util.ArrayList;
 class Server
 {
     private static boolean gameover = false;
-    private static int nPlayers;
-    private static int nReady;
+    private static volatile int nPlayers;
+    private static volatile int nReady;
     private static int counter = 0;
     private static int werewolfID1;
     private static int werewolfID2;
@@ -88,6 +88,9 @@ class Server
 					System.out.println(objOut.toJSONString());
 					System.out.println(objOut.toString());*/
                     outToClient.println(objOut.toString());
+                    while (nPlayers < 6 || nReady < 6) {
+                        System.out.println(nPlayers + " " + nReady);
+                    }
                     if (nPlayers == 6 && nReady == nPlayers)
                     {
                         JSONObject objOut2 = new JSONObject();
@@ -178,8 +181,6 @@ class Server
     public static void main(String argv[]) throws Exception
     {
         try {
-            nPlayers = 0;
-            nReady = 0;
             werewolfID1 = (int) (Math.random() * 6);
             werewolfID2 = (int) (Math.random() * 6);
             while (werewolfID2 == werewolfID1)
