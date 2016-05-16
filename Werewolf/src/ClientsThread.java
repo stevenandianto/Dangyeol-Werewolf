@@ -2,7 +2,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import references.*;
-import references.UnreliableSender;
 
 import java.io.*;
 import java.net.*;
@@ -27,13 +26,14 @@ class ClientsThread extends Thread {
 
     @Override
     public void run(){
-        try {
-            System.out.println("Masukan IP Server: ");
-            String ip = inFromUser.readLine();
-            System.out.println("Masukan Port Server: ");
-            String port = inFromUser.readLine();
+        System.out.println("Masukan IP Server: ");
+        //String ip = inFromUser.readLine();
+        String ip = "localhost";
+        System.out.println("Masukan Port Server: ");
+        //String port = inFromUser.readLine();
+        String port = "9875";
 
-            TCPConnection(ip,Integer.parseInt(port));
+        TCPConnection(ip,Integer.parseInt(port));
 
             /*System.out.println("Masukan Address : ");
             String SenderAddress = inFromUser.readLine();
@@ -66,9 +66,6 @@ class ClientsThread extends Thread {
                 break;
             }*/
 
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
     }
 
     public int statusCode(String test, ArrayList<String> attributes) {
@@ -107,7 +104,7 @@ class ClientsThread extends Thread {
             Object tempObj;
             JSONObject obj, objOut;
             JSONArray array;
-
+            int temp = 9990;
             String ip = ServerIP;
             Socket TCPclientSocket = new Socket(ip, ServerPort);
             PrintWriter outToServer = new PrintWriter(TCPclientSocket.getOutputStream(), true);
@@ -233,7 +230,6 @@ class ClientsThread extends Thread {
                 objOut = new JSONObject();
                 objOut.put("method", "client_address");
                 outToServer.println(objOut.toString());
-
                 responseLine = inFromServer.readLine();
                 response.append(responseLine);
                 tempObj = parser.parse(response.toString());
@@ -253,6 +249,7 @@ class ClientsThread extends Thread {
                         System.out.println(description);
                         break;
                 }
+
             }
 
 
@@ -261,7 +258,9 @@ class ClientsThread extends Thread {
             if (playerID == clients.size()-1 || playerID == clients.size()-2) {
                 DatagramSocket datagramSocket = new DatagramSocket();
                 UnreliableSender unreliableSender = new UnreliableSender(datagramSocket);
-                int proposedID = Integer.valueOf(inFromUser.readLine());
+                System.out.println("Sebelum read integer");
+                int proposedID = playerID;
+                System.out.println("Proposed id"+proposedID);
                 int proposalNo = 1;
                 while (proposalNo <= 4) {
                     objOut = new JSONObject();
@@ -273,18 +272,29 @@ class ClientsThread extends Thread {
 
                     byte[] sendData = objOut.toString().getBytes();
                     String targetAddress = (String) ((JSONObject) clients.get(proposalNo-1)).get("address");
-                    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(targetAddress), 9999);
+                    targetAddress = targetAddress.substring(1);
+                    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(targetAddress), temp+proposalNo-1);
                     unreliableSender.send(sendPacket);
                     proposalNo++;
                 }
                 datagramSocket.close();
             }
             else {
-                DatagramSocket serverSocket = new DatagramSocket(9999);
+                DatagramSocket serverSocket = null;
+                System.out.println("MASUK ELSE 5 atau 6");
+                for(int i=0; i< clients.size()-2;i++){
+                    if(playerID == i){
+                        temp += playerID;
+                         serverSocket = new DatagramSocket(temp);
+                    }
+
+                }
+                System.out.println("Socket Voter "+temp);
                 //ServerSocket sSocket = new ServerSocket(serverPort);
                 byte[] receiveData = new byte[1024];
                 while(true)
                 {
+
                     DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                     serverSocket.receive(receivePacket);
                     //Socket clientSocket = sSocket.accept();

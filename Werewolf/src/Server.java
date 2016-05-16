@@ -173,6 +173,7 @@ class Server
                 System.out.println(socket.getInputStream().toString());
 
                 while (!gameover) {
+
                     // reading lines
                     StringBuffer jb = new StringBuffer();
                     clientSentence = inFromClient.readLine();
